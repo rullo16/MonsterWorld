@@ -82,8 +82,25 @@ void ARed::Interact()
 			UE_LOG(LogTemp, Warning, TEXT("Showing Message Box"));
 			UMessageBox* MessageBox = Cast<UMessageBox>(GameOverlay->GetMessageBox());
 			if (MessageBox)
-			{
+			{	
+				MessageBox->SetMessageText(FText::FromString("You Picked up a " + OverlappingItem->GetItemName()));
 				MessageBox->SetVisibility(ESlateVisibility::Visible);
+
+				// Local timer handle and delegate for the lambda callback
+				FTimerHandle TimerHandle;
+				FTimerDelegate TimerDel = FTimerDelegate::CreateLambda([MessageBox]()
+				{
+					if (MessageBox)
+					{
+						MessageBox->SetVisibility(ESlateVisibility::Hidden);
+					}
+				});
+
+				if (UWorld* World = GetWorld())
+				{
+					World->GetTimerManager().SetTimer(TimerHandle, TimerDel, 3.0f, false);
+				}
+				
 			}
 		}
 		OverlappingItem->Destroy();

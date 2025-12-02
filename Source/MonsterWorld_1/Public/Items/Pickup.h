@@ -19,6 +19,8 @@ public:
 	// Sets default values for this actor's properties
 	APickup();
 
+	FORCEINLINE FString GetItemName() const { return ItemName; }
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -27,6 +29,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UBoxComponent* CollisionBox;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Properties)
+	FString ItemName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Properties)
+	int32 ItemID;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
