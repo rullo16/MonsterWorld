@@ -18,4 +18,7 @@ class MONSTERWORLD_1_API UInputDataConfig : public UDataAsset
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UInputAction* Move;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UInputAction* Interact;
 };

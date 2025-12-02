@@ -7,6 +7,12 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Config/InputDataConfig.h"
+#include "PaperFlipbookComponent.h"
+#include "HUD/GameHUD.h"
+#include "HUD/GameOverlay.h"
+#include "HUD/MessageBox.h"
+#include "Components/BoxComponent.h"
+#include "Items/Pickup.h"
 
 
 ARed::ARed()
@@ -21,6 +27,9 @@ ARed::ARed()
 	Camera->SetupAttachment(SpringArm);
 	Camera->ProjectionMode = ECameraProjectionMode::Orthographic;
 	Camera->OrthoWidth = 1000.f;
+
+	InteractionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("InteractionBox"));
+	InteractionBox->SetupAttachment(GetRootComponent());
 }
 
 void ARed::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -31,25 +40,97 @@ void ARed::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	{
 		if (!InputActions) return;
 		
-		Input->BindAction(InputActions->Move, ETriggerEvent::Triggered, this, &ARed::Move);
+		Input->BindAction(InputActions->Move, ETriggerEvent::Triggered, this, &ARed::Move, false);
+		Input->BindAction(InputActions->Move, ETriggerEvent::Completed, this, &ARed::Move, true);
+		Input->BindAction(InputActions->Interact, ETriggerEvent::Triggered, this, &ARed::Interact);
 	}
+}
+
+void ARed::SetOverlappingItem(APickup* Item)
+{
+	OverlappingItem = Item;
 }
 
 void ARed::BeginPlay()
 {
 	Super::BeginPlay();
 	AddDefaultInputMapping();
-
+	InitializeDefaultHUD();
 
 
 }
 
-void ARed::Move(const FInputActionValue& Value)
-{
-	FVector2D Movement = Value.Get<FVector2D>();
+void ARed::Move(const FInputActionValue& Value, const bool TransitionToIdle)
+{	
+	if (Value.Get<FVector2D>().X != 0.f || Value.Get<FVector2D>().Y != 0.f) {
+		Movement = Value.Get<FVector2D>();
+	}
+
+	UpdateAnimation(TransitionToIdle);
 
 	AddMovementInput(FVector(1.f, 0.f, 0.f), Movement.X);
 	AddMovementInput(FVector(0.f, 1.f, 0.f), Movement.Y);
+}
+
+void ARed::Interact()
+{
+	if (OverlappingItem)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Picked up item: %s"), *OverlappingItem->GetName());
+		if (GameOverlay)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Showing Message Box"));
+			UMessageBox* MessageBox = Cast<UMessageBox>(GameOverlay->GetMessageBox());
+			if (MessageBox)
+			{
+				MessageBox->SetVisibility(ESlateVisibility::Visible);
+			}
+		}
+		OverlappingItem->Destroy();
+	}
+}
+
+void ARed::UpdateAnimation(const bool TransitionToIdle)
+{
+	if (TransitionToIdle)
+
+	{
+		if (Movement.X > 0.f)
+		{
+			GetSprite()->SetFlipbook(IdleAnimationRight);
+		}
+		else if (Movement.X < 0.f)
+		{
+			GetSprite()->SetFlipbook(IdleAnimationLeft);
+		}
+		else if (Movement.Y > 0.f)
+		{
+			GetSprite()->SetFlipbook(IdleAnimationDown);
+		}
+		else if (Movement.Y < 0.f)
+		{
+			GetSprite()->SetFlipbook(IdleAnimationUp);
+		}
+	}
+	else 
+	{
+		if (Movement.X > 0.f)
+		{
+			GetSprite()->SetFlipbook(WalkAnimationRight);
+		}
+		else if (Movement.X < 0.f)
+		{
+			GetSprite()->SetFlipbook(WalkAnimationLeft);
+		}
+		else if (Movement.Y > 0.f)
+		{
+			GetSprite()->SetFlipbook(WalkAnimationDown);
+		}
+		else if (Movement.Y < 0.f)
+		{
+			GetSprite()->SetFlipbook(WalkAnimationUp);
+		}
+	}
 }
 
 
@@ -60,6 +141,29 @@ void ARed::AddDefaultInputMapping()
 
 	Subsystem->ClearAllMappings();
 	Subsystem->AddMappingContext(TopDownContext, 0);
+}
+
+void ARed::InitializeDefaultHUD()
+{
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+
+	if (PlayerController)
+	{
+		AGameHUD* GameHUD = Cast<AGameHUD>(PlayerController->GetHUD());
+		if (GameHUD)
+		{
+			GameOverlay = GameHUD->GetGameOverlay();
+			if (GameOverlay)
+			{
+				GameOverlay->SetMessageBoxText(FText::FromString("You Picked Up a Health Potion!"));
+				UMessageBox* MessageBox = Cast<UMessageBox>(GameOverlay->GetMessageBox());
+				if (MessageBox)
+				{
+					MessageBox->SetVisibility(ESlateVisibility::Hidden);
+				}
+			}
+		}
+	}
 }
 
 
