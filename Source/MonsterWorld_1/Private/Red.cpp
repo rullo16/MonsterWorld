@@ -13,6 +13,7 @@
 #include "HUD/MessageBox.h"
 #include "Components/BoxComponent.h"
 #include "Items/Pickup.h"
+#include "Green.h"
 
 
 ARed::ARed()
@@ -51,6 +52,11 @@ void ARed::SetOverlappingItem(APickup* Item)
 	OverlappingItem = Item;
 }
 
+void ARed::SetOverlappingCharacter(AGreen* Character)
+{
+	OverlappingCharacter = Character;
+}
+
 void ARed::BeginPlay()
 {
 	Super::BeginPlay();
@@ -76,14 +82,14 @@ void ARed::Interact()
 {
 	if (OverlappingItem)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Picked up item: %s"), *OverlappingItem->GetName());
+		MessageText = OverlappingItem->GetMessageText();
 		if (GameOverlay)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Showing Message Box"));
 			UMessageBox* MessageBox = Cast<UMessageBox>(GameOverlay->GetMessageBox());
 			if (MessageBox)
 			{	
-				MessageBox->SetMessageText(FText::FromString("You Picked up a " + OverlappingItem->GetItemName()));
+				MessageBox->SetMessageText(FText::FromString(MessageText));
 				MessageBox->SetVisibility(ESlateVisibility::Visible);
 
 				// Local timer handle and delegate for the lambda callback
@@ -104,6 +110,37 @@ void ARed::Interact()
 			}
 		}
 		OverlappingItem->Destroy();
+	}
+
+	if (OverlappingCharacter)
+	{
+		MessageText = OverlappingCharacter->GetMessageText();
+		if (GameOverlay)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Showing Message Box"));
+			UMessageBox* MessageBox = Cast<UMessageBox>(GameOverlay->GetMessageBox());
+			if (MessageBox)
+			{
+				MessageBox->SetMessageText(FText::FromString(MessageText));
+				MessageBox->SetVisibility(ESlateVisibility::Visible);
+
+				// Local timer handle and delegate for the lambda callback
+				FTimerHandle TimerHandle;
+				FTimerDelegate TimerDel = FTimerDelegate::CreateLambda([MessageBox]()
+					{
+						if (MessageBox)
+						{
+							MessageBox->SetVisibility(ESlateVisibility::Hidden);
+						}
+					});
+
+				if (UWorld* World = GetWorld())
+				{
+					World->GetTimerManager().SetTimer(TimerHandle, TimerDel, 3.0f, false);
+				}
+
+			}
+		}
 	}
 }
 

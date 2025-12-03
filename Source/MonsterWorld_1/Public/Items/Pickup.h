@@ -20,6 +20,7 @@ public:
 	APickup();
 
 	FORCEINLINE FString GetItemName() const { return ItemName; }
+	FORCEINLINE FString GetMessageText() const { return MessageText; }
 
 protected:
 
@@ -34,6 +35,9 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Properties)
 	int32 ItemID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Properties)
+	FString MessageText;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -7,3 +7,7 @@ void IPickupInterface::SetOverlappingItem(APickup* Item)
 {
 
 }
+
+void IPickupInterface::SetOverlappingCharacter(AGreen* Character)
+{
+}

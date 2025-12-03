@@ -4,24 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "PickupInterface.generated.h"
+#include "DialogueInterface.generated.h"
 
-/**
- * 
- */
 UINTERFACE(MinimalAPI)
-class UPickupInterface: public UInterface
+class UDialogueInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class MONSTERWORLD_1_API IPickupInterface
-{
 
+class MONSTERWORLD_1_API IDialogueInterface
+{
 	GENERATED_BODY()
+	
 
 public:
-	
-	virtual void SetOverlappingItem(class APickup* Item);
+
 	virtual void SetOverlappingCharacter(class AGreen* Character);
+
 };

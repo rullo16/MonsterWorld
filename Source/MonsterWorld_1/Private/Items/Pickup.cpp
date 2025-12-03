@@ -27,6 +27,8 @@ void APickup::BeginPlay()
 
 	CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &APickup::OnBoxOverlap);
 	CollisionBox->OnComponentEndOverlap.AddDynamic(this, &APickup::OnBoxEndOverlap);
+
+	MessageText = FString::Printf(TEXT("You picked up: %s"), *ItemName);
 	
 }
 

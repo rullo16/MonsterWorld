@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "PaperCharacter.h"
 #include "Interfaces/PickupInterface.h"
+#include "Interfaces/DialogueInterface.h"
 #include "Red.generated.h"
 
 
@@ -16,6 +17,7 @@ class UPaperFlipbook;
 class UGameOverlay;
 class UBoxComponent;
 class APickup;
+class AGreen;
 
 UCLASS()
 class MONSTERWORLD_1_API ARed : public APaperCharacter, public IPickupInterface
@@ -27,6 +29,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void SetOverlappingItem(APickup* Item) override;
+	virtual void SetOverlappingCharacter(AGreen* Character);
 protected:
 
 	UPROPERTY(EditAnywhere, Category=Input)
@@ -86,9 +89,12 @@ private:
 	UPROPERTY(VisibleInstanceOnly)
 	APickup* OverlappingItem;
 
+	UPROPERTY(VisibleInstanceOnly)
+	AGreen* OverlappingCharacter;
+
 	FVector2D Movement;
 	UGameOverlay* GameOverlay;
-
+	FString MessageText;
 
 	void AddDefaultInputMapping();
 	void InitializeDefaultHUD();
